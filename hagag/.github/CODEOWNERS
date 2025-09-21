@@ -1,0 +1,38 @@
+# Code owners for Estate Management System v2.0
+
+# Global owners
+* @Mohagag609
+
+# Source code
+/src/ @Mohagag609
+
+# API routes
+/src/app/api/ @Mohagag609
+
+# Components
+/src/components/ @Mohagag609
+
+# Database
+/database-schema.sql @Mohagag609
+/setup-database.js @Mohagag609
+/seed-database.js @Mohagag609
+
+# Configuration files
+/package.json @Mohagag609
+/next.config.js @Mohagag609
+/tailwind.config.js @Mohagag609
+/tsconfig.json @Mohagag609
+/.eslintrc.json @Mohagag609
+/.prettierrc @Mohagag609
+
+# Documentation
+/README.md @Mohagag609
+/CONTRIBUTING.md @Mohagag609
+/CHANGELOG.md @Mohagag609
+/LICENSE @Mohagag609
+
+# GitHub workflows
+/.github/ @Mohagag609
+
+# Deployment
+/vercel.json @Mohagag609

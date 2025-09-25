@@ -34,7 +34,11 @@ export async function GET(request: NextRequest) {
 
     const total = await prisma.installment.count({ where });
 
-    return NextResponse.json(installments);
+    return NextResponse.json({
+      installments,
+      total,
+      hasMore: offset + limit < total
+    });
   } catch (error) {
     console.error('Error fetching installments:', error);
     return NextResponse.json(

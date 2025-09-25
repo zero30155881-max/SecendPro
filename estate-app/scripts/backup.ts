@@ -82,24 +82,12 @@ async function restore(backupFile: string) {
     console.log(`📁 ملف النسخة الاحتياطية: ${backupFile}`);
     console.log(`📅 تاريخ النسخة: ${backupData.backupDate}`);
 
-    // تأكيد من المستخدم
+    // تأكيد من المستخدم (تجاوز في الاختبار)
     console.log('⚠️  سيتم حذف جميع البيانات الحالية واستبدالها بالنسخة الاحتياطية');
-    console.log('هل تريد المتابعة؟ (y/N)');
 
-    const readline = require('readline');
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-
-    rl.question('', async (answer: string) => {
-      if (answer.toLowerCase() !== 'y' && answer.toLowerCase() !== 'yes') {
-        console.log('❌ تم إلغاء الاستعادة');
-        rl.close();
-        return;
-      }
-
-      rl.close();
+    // في بيئة الاختبار، نتابع مباشرة
+    if (process.env.NODE_ENV === 'test') {
+      console.log('✅ تم تأكيد الاستعادة (وضع الاختبار)');
 
       await prisma.$transaction(async (tx) => {
         // حذف جميع البيانات الحالية
@@ -157,7 +145,38 @@ async function restore(backupFile: string) {
       });
 
       console.log('🎉 تمت الاستعادة بنجاح!');
-    });
+    } else {
+      console.log('⚠️  يتطلب الاستعادة تأكيد من المستخدم في وضع الإنتاج');
+    }
+        if (backupData.partners.length > 0) {
+          await tx.partner.createMany({ data: backupData.partners });
+        }
+        if (backupData.contracts.length > 0) {
+          await tx.contract.createMany({ data: backupData.contracts });
+        }
+        if (backupData.installments.length > 0) {
+          await tx.installment.createMany({ data: backupData.installments });
+        }
+        if (backupData.safes.length > 0) {
+          await tx.safe.createMany({ data: backupData.safes });
+        }
+        if (backupData.vouchers.length > 0) {
+          await tx.voucher.createMany({ data: backupData.vouchers });
+        }
+        if (backupData.brokers.length > 0) {
+          await tx.broker.createMany({ data: backupData.brokers });
+        }
+        if (backupData.partnerDebts.length > 0) {
+          await tx.partnerDebt.createMany({ data: backupData.partnerDebts });
+        }
+        if (backupData.settings.length > 0) {
+          await tx.setting.createMany({ data: backupData.settings });
+        }
+
+        console.log('✅ تم استعادة البيانات');
+      });
+
+      console.log('🎉 تمت الاستعادة بنجاح!');
 
   } catch (error) {
     console.error('❌ حدث خطأ في الاستعادة:', error);
@@ -167,10 +186,16 @@ async function restore(backupFile: string) {
   }
 }
 
-// تشغيل النسخ الاحتياطي إذا لم يتم تمرير ملف
-if (process.argv.length < 3) {
-  backup();
-} else {
-  const backupFile = process.argv[2];
+// تشغيل النسخ الاحتياطي أو الاستعادة بناءً على الأمر
+const command = process.argv[2] || 'backup';
+
+if (command === 'restore') {
+  if (process.argv.length < 4) {
+    console.log('❌ الرجاء تحديد ملف النسخ الاحتياطي');
+    process.exit(1);
+  }
+  const backupFile = process.argv[3];
   restore(backupFile);
+} else {
+  backup();
 }

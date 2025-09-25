@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { logAction } from '@/utils';
 
 // GET /api/contracts - جلب جميع العقود
 export async function GET(request: NextRequest) {
@@ -18,12 +17,6 @@ export async function GET(request: NextRequest) {
     const [contracts, total] = await Promise.all([
       prisma.contract.findMany({
         where,
-        include: {
-          unit: true,
-          customer: true,
-          installments: true,
-          vouchers: true
-        },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset
@@ -120,11 +113,17 @@ export async function POST(request: NextRequest) {
 
     // تسجيل العملية
     try {
-      await logAction('إنشاء عقد جديد', {
-        contractId: contract.id,
-        code: contract.code,
-        unitId: contract.unitId,
-        customerId: contract.customerId
+      await prisma.auditLog.create({
+        data: {
+          action: 'SYSTEM',
+          description: 'إنشاء عقد جديد',
+          details: JSON.stringify({
+            contractId: contract.id,
+            code: contract.code,
+            unitId: contract.unitId,
+            customerId: contract.customerId
+          })
+        }
       });
     } catch (logError) {
       console.error('Error logging contract creation:', logError);

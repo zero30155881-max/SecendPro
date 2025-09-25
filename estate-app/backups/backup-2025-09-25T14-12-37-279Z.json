@@ -1,0 +1,86 @@
+{
+  "customers": [
+    {
+      "id": "cmfzf2mmh0000js4j9tfkp4h8",
+      "name": "أحمد محمد",
+      "phone": "01234567890",
+      "nationalId": null,
+      "address": null,
+      "status": "نشط",
+      "notes": null,
+      "createdAt": "2025-09-25T12:56:18.185Z",
+      "updatedAt": "2025-09-25T12:56:18.185Z"
+    }
+  ],
+  "units": [
+    {
+      "id": "cmfzf3jjm0002js4jimyg6wee",
+      "code": "A-1-شقة101",
+      "name": "شقة 101",
+      "status": "متاحة",
+      "area": null,
+      "floor": "1",
+      "building": "A",
+      "notes": null,
+      "totalPrice": 500000,
+      "unitType": "سكني",
+      "createdAt": "2025-09-25T12:57:00.850Z",
+      "updatedAt": "2025-09-25T12:57:00.850Z"
+    },
+    {
+      "id": "cmfzfve490006js4jg4xzc7e4",
+      "code": "A-1-شقة102",
+      "name": "شقة 102",
+      "status": "متاحة",
+      "area": null,
+      "floor": "1",
+      "building": "A",
+      "notes": null,
+      "totalPrice": 550000,
+      "unitType": "سكني",
+      "createdAt": "2025-09-25T13:18:40.186Z",
+      "updatedAt": "2025-09-25T13:18:40.186Z"
+    }
+  ],
+  "partners": [
+    {
+      "id": "cmfzf3p910004js4jok027h2d",
+      "name": "شركة ABC",
+      "phone": "01111111111",
+      "createdAt": "2025-09-25T12:57:08.246Z",
+      "updatedAt": "2025-09-25T12:57:08.246Z"
+    },
+    {
+      "id": "cmfzfvma80008js4jpaln3ouz",
+      "name": "شركة DEF",
+      "phone": "01111111112",
+      "createdAt": "2025-09-25T13:18:50.768Z",
+      "updatedAt": "2025-09-25T13:18:50.768Z"
+    }
+  ],
+  "contracts": [],
+  "installments": [],
+  "safes": [
+    {
+      "id": "cmfzf0tdu0000jsxe0p1u0uk5",
+      "name": "الخزنة الرئيسية",
+      "balance": 0,
+      "createdAt": "2025-09-25T12:54:53.635Z",
+      "updatedAt": "2025-09-25T12:54:53.635Z"
+    }
+  ],
+  "vouchers": [],
+  "brokers": [],
+  "partnerDebts": [],
+  "settings": [
+    {
+      "id": "app_settings",
+      "theme": "dark",
+      "font": 16,
+      "pass": null,
+      "data": null
+    }
+  ],
+  "backupDate": "2025-09-25T14:12:37.279Z",
+  "version": "1.0"
+}

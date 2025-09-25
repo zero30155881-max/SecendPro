@@ -6,19 +6,27 @@ import Navigation from '@/components/Navigation';
 import Dashboard from '@/components/Dashboard';
 import Customers from '@/components/Customers';
 import Units from '@/components/Units';
+import Contracts from '@/components/Contracts';
+import Installments from '@/components/Installments';
+import Brokers from '@/components/Brokers';
+import Partners from '@/components/Partners';
+import Treasury from '@/components/Treasury';
+import Vouchers from '@/components/Vouchers';
+import Reports from '@/components/Reports';
+import Backup from '@/components/Backup';
 
 const routes = [
   { id: 'dash', title: 'لوحة التحكم', render: () => <Dashboard />, tab: true },
   { id: 'customers', title: 'العملاء', render: () => <Customers />, tab: true },
   { id: 'units', title: 'الوحدات', render: () => <Units />, tab: true },
-  { id: 'contracts', title: 'العقود', render: () => <div>Contracts Component</div>, tab: true },
-  { id: 'brokers', title: 'السماسرة', render: () => <div>Brokers Component</div>, tab: true },
-  { id: 'installments', title: 'الأقساط', render: () => <div>Installments Component</div>, tab: true },
-  { id: 'vouchers', title: 'السندات', render: () => <div>Vouchers Component</div>, tab: true },
-  { id: 'partners', title: 'الشركاء', render: () => <div>Partners Component</div>, tab: true },
-  { id: 'treasury', title: 'الخزينة', render: () => <div>Treasury Component</div>, tab: true },
-  { id: 'reports', title: 'التقارير', render: () => <div>Reports Component</div>, tab: true },
-  { id: 'backup', title: 'النسخة الاحتياطية', render: () => <div>Backup Component</div>, tab: true },
+  { id: 'contracts', title: 'العقود', render: () => <Contracts />, tab: true },
+  { id: 'brokers', title: 'السماسرة', render: () => <Brokers />, tab: true },
+  { id: 'installments', title: 'الأقساط', render: () => <Installments />, tab: true },
+  { id: 'vouchers', title: 'السندات', render: () => <Vouchers />, tab: true },
+  { id: 'partners', title: 'الشركاء', render: () => <Partners />, tab: true },
+  { id: 'treasury', title: 'الخزينة', render: () => <Treasury />, tab: true },
+  { id: 'reports', title: 'التقارير', render: () => <Reports />, tab: true },
+  { id: 'backup', title: 'النسخة الاحتياطية', render: () => <Backup />, tab: true },
 ];
 
 export default function Home() {

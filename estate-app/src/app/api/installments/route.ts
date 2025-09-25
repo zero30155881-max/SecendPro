@@ -32,6 +32,8 @@ export async function GET(request: NextRequest) {
       orderBy: { dueDate: 'asc' }
     });
 
+    const total = await prisma.installment.count({ where });
+
     return NextResponse.json(installments);
   } catch (error) {
     console.error('Error fetching installments:', error);

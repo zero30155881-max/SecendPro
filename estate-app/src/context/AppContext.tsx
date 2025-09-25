@@ -138,13 +138,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
         customersRes,
         unitsRes,
         partnersRes,
+        contractsRes,
+        installmentsRes,
         safesRes,
+        vouchersRes,
+        brokersRes,
         settingsRes
       ] = await Promise.all([
         fetch('/api/customers').then(res => res.json()),
         fetch('/api/units').then(res => res.json()),
         fetch('/api/partners').then(res => res.json()),
+        fetch('/api/contracts').then(res => res.json()),
+        fetch('/api/installments').then(res => res.json()),
         fetch('/api/safes').then(res => res.json()),
+        fetch('/api/vouchers').then(res => res.json()),
+        fetch('/api/brokers').then(res => res.json()),
         fetch('/api/settings').then(res => res.json())
       ]);
 
@@ -152,11 +160,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_CUSTOMERS', payload: customersRes });
       dispatch({ type: 'SET_UNITS', payload: unitsRes });
       dispatch({ type: 'SET_PARTNERS', payload: partnersRes });
-      dispatch({ type: 'SET_CONTRACTS', payload: [] });
-      dispatch({ type: 'SET_INSTALLMENTS', payload: [] });
+      dispatch({ type: 'SET_CONTRACTS', payload: contractsRes.contracts || [] });
+      dispatch({ type: 'SET_INSTALLMENTS', payload: installmentsRes.installments || installmentsRes || [] });
       dispatch({ type: 'SET_SAFES', payload: safesRes });
-      dispatch({ type: 'SET_VOUCHERS', payload: [] });
-      dispatch({ type: 'SET_BROKERS', payload: [] });
+      dispatch({ type: 'SET_VOUCHERS', payload: vouchersRes });
+      dispatch({ type: 'SET_BROKERS', payload: brokersRes });
       dispatch({ type: 'SET_PARTNER_DEBTS', payload: [] });
       dispatch({ type: 'SET_SETTINGS', payload: settingsRes });
 

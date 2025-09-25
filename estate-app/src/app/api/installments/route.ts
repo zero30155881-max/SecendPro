@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { logAction } from '@/utils';
 
 // GET /api/installments - الحصول على جميع الأقساط
 export async function GET(request: NextRequest) {
@@ -8,6 +7,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const unitId = searchParams.get('unitId');
     const status = searchParams.get('status');
+    const limit = parseInt(searchParams.get('limit') || '100');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     let where: any = {};
 
@@ -21,15 +22,9 @@ export async function GET(request: NextRequest) {
 
     const installments = await prisma.installment.findMany({
       where,
-      include: {
-        unit: true,
-        contract: {
-          include: {
-            customer: true
-          }
-        }
-      },
-      orderBy: { dueDate: 'asc' }
+      orderBy: { dueDate: 'asc' },
+      take: limit,
+      skip: offset
     });
 
     const total = await prisma.installment.count({ where });
@@ -74,7 +69,17 @@ export async function POST(request: NextRequest) {
     });
 
     // تسجيل العملية
-    await logAction('إضافة قسط جديد', { id: installment.id, amount: installment.amount, dueDate: installment.dueDate });
+    try {
+      await prisma.auditLog.create({
+        data: {
+          action: 'SYSTEM',
+          description: 'إضافة قسط جديد',
+          details: JSON.stringify({ id: installment.id, amount: installment.amount, dueDate: installment.dueDate })
+        }
+      });
+    } catch (logError) {
+      console.error('Error logging installment creation:', logError);
+    }
 
     return NextResponse.json(installment, { status: 201 });
   } catch (error) {
@@ -120,7 +125,17 @@ export async function PUT(request: NextRequest) {
     });
 
     // تسجيل العملية
-    await logAction('تحديث قسط', { id: updatedInstallment.id, status: updatedInstallment.status });
+    try {
+      await prisma.auditLog.create({
+        data: {
+          action: 'SYSTEM',
+          description: 'تحديث قسط',
+          details: JSON.stringify({ id: updatedInstallment.id, status: updatedInstallment.status })
+        }
+      });
+    } catch (logError) {
+      console.error('Error logging installment update:', logError);
+    }
 
     return NextResponse.json(updatedInstallment);
   } catch (error) {

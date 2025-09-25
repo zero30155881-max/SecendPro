@@ -11,21 +11,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// نموذج المستخدمين
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("user")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // العلاقات
-  auditLogs AuditLog[]
-
-  @@map("users")
-}
 
 // نموذج العملاء
 model Customer {
@@ -298,15 +283,11 @@ model Transfer {
 // نموذج سجل التغييرات
 model AuditLog {
   id          String   @id @default(cuid())
-  userId      String?
   timestamp   DateTime @default(now())
   action      String
   description String
   details     Json?
   createdAt   DateTime @default(now())
-
-  // العلاقات
-  user User? @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
 }

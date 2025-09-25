@@ -93,7 +93,7 @@ export async function logAction(description: string, details: Record<string, any
       data: {
         action: 'SYSTEM',
         description,
-        details: JSON.stringify(details)
+        details: details ? JSON.stringify(details) : null
       }
     });
   } catch (error) {

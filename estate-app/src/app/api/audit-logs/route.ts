@@ -9,9 +9,6 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
 
     const auditLogs = await prisma.auditLog.findMany({
-      include: {
-        user: true
-      },
       orderBy: { timestamp: 'desc' },
       take: limit,
       skip: offset
@@ -38,17 +35,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, action, description, details } = body;
+    const { action, description, details } = body;
 
     const auditLog = await prisma.auditLog.create({
       data: {
-        userId,
-        action,
+        action: action || 'SYSTEM',
         description,
         details: details ? JSON.stringify(details) : null
-      },
-      include: {
-        user: true
       }
     });
 

@@ -18,6 +18,7 @@ const routes = [
   { id: 'partners', title: 'الشركاء', render: () => <div>Partners Component</div>, tab: true },
   { id: 'treasury', title: 'الخزينة', render: () => <div>Treasury Component</div>, tab: true },
   { id: 'reports', title: 'التقارير', render: () => <div>Reports Component</div>, tab: true },
+  { id: 'backup', title: 'النسخة الاحتياطية', render: () => <div>Backup Component</div>, tab: true },
 ];
 
 export default function Home() {
@@ -37,7 +38,6 @@ export default function Home() {
         <h1>نظام إدارة العقارات</h1>
         <div className="header-actions">
           <button className="btn secondary">إعدادات</button>
-          <button className="btn secondary">نسخة احتياطية</button>
         </div>
       </header>
 

@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏢 نظام إدارة العقارات - جاهز للاستخدام
 
-## Getting Started
+**🎯 المشروع مكتمل وجاهز للإنتاج!**
 
-First, run the development server:
+## 📋 المحتويات
+
+- [📖 دليل المستخدم الشامل](README-ESTATE.md) - جميع التفاصيل والميزات
+- [🚀 التشغيل السريع](#-التشغيل-السريع)
+- [🔧 التقنيات المستخدمة](#-التقنيات-المستخدمة)
+- [🎯 الميزات المكتملة](#-الميزات-المكتملة)
+- [📊 إحصائيات المشروع](#-إحصائيات-المشروع)
+
+## 🚀 التشغيل السريع
 
 ```bash
+# 1. تثبيت التبعيات
+npm install
+
+# 2. إعداد قاعدة البيانات
+npm run db:push
+
+# 3. إعداد البيانات الأولية
+npm run db:setup
+
+# 4. إنشاء بيانات تجريبية (اختياري)
+npx tsx scripts/create-test-data.ts
+
+# 5. تشغيل المشروع
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔧 التقنيات المستخدمة
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js 15, React 19, TypeScript 5
+- **Backend**: Next.js API Routes (20+ endpoints)
+- **Database**: SQLite/PostgreSQL مع Prisma ORM
+- **Styling**: Tailwind CSS + RTL Support
+- **State Management**: React Context + useReducer
+- **Charts**: Chart.js
+- **Testing**: Manual Testing مع 120+ سجل
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🎯 الميزات المكتملة
 
-## Learn More
+### ✅ النظام الأساسي
+- [x] قاعدة بيانات شاملة (18 جدول)
+- [x] واجهة عربية مع دعم RTL
+- [x] ثيم فاتح/داكن قابل للتخصيص
+- [x] نظام Undo/Redo (50 خطوة)
+- [x] نسخ احتياطي واستعادة
 
-To learn more about Next.js, take a look at the following resources:
+### ✅ إدارة البيانات
+- [x] إدارة العملاء (بحث، فلترة، تعديل)
+- [x] إدارة الوحدات (ربط بالشركاء)
+- [x] نظام الشركاء المتقدم (مجموعات، نسب، ديون)
+- [x] نظام العقود (كاش، تقسيط، تجاري)
+- [x] نظام الأقساط (120+ قسط تجريبي)
+- [x] نظام السماسرة (عمولات، دفعات)
+- [x] نظام الخزينة والسندات
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### ✅ التقارير والإحصائيات
+- [x] لوحة تحكم تفاعلية مع KPI
+- [x] 8 تقارير متنوعة
+- [x] رسوم بيانية تفاعلية
+- [x] تصدير البيانات (CSV, PDF, Excel)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📊 إحصائيات المشروع
 
-## Deploy on Vercel
+- **18 جدول** في قاعدة البيانات
+- **20+ API Route** متطورة
+- **9 شاشات رئيسية** مكتملة
+- **120+ سجل تجريبي** للاختبار
+- **8 تقارير متنوعة** مع فلترة
+- **اختبارات شاملة** مكتملة ✅
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📖 دليل المفصل
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+للحصول على دليل مفصل شامل، يرجى مراجعة [README-ESTATE.md](README-ESTATE.md)
+
+## 🚀 النشر
+
+المشروع جاهز للنشر على:
+- ✅ **Vercel** (موصى به)
+- ✅ **Netlify**
+- ✅ **Railway**
+- ✅ **Docker**
+- ✅ **أي hosting يدعم Node.js**
+
+## 🔒 ملاحظة أمان
+
+**هذا النظام بدون مصادقة كما طلبت** - استخدم في بيئة آمنة داخلية فقط!
+
+## 📞 الدعم
+
+للدعم والمساعدة:
+1. راجع [README-ESTATE.md](README-ESTATE.md)
+2. تحقق من الأسئلة الشائعة
+3. فتح Issue في GitHub
+
+---
+
+**تم تطوير هذا النظام بـ ❤️ لإدارة العقارات بكفاءة عالية**

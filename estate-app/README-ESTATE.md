@@ -1,57 +1,78 @@
-# نظام إدارة العقارات - Next.js + PostgreSQL
+# 🏢 نظام إدارة العقارات - Next.js + PostgreSQL
 
-نظام شامل لإدارة العقارات والعملاء والعقود مبني بـ Next.js و TypeScript مع قاعدة بيانات PostgreSQL.
+نظام شامل ومتقدم لإدارة العقارات والعملاء والعقود مبني بـ Next.js 15 و TypeScript مع قاعدة بيانات PostgreSQL و Prisma ORM.
+
+**🎯 حالة المشروع: مكتمل وجاهز للإنتاج**
 
 ## الميزات الرئيسية
 
-### ✨ الميزات المُكتملة
-- ✅ قاعدة بيانات PostgreSQL مع Prisma ORM
-- ✅ لوحة تحكم تفاعلية مع مؤشرات KPI
-- ✅ إدارة العملاء (إضافة، تعديل، حذف، بحث)
-- ✅ إدارة الوحدات (إضافة، تعديل، حذف، بحث)
-- ✅ إدارة الشركاء ومجموعات الشركاء
-- ✅ نظام الخزنة والسندات
-- ✅ نظام state management بـ React Context
-- ✅ نظام undo/redo مع قاعدة البيانات
-- ✅ دعم الثيم الفاتح والداكن
-- ✅ واجهة عربية متجاوبة
-- ✅ تصدير البيانات (CSV)
-- ✅ نسخ احتياطي واستعادة
-- ✅ API routes للتفاعل مع قاعدة البيانات
+### ✨ الميزات المُكتملة بالكامل
+- ✅ **قاعدة بيانات SQLite/PostgreSQL** مع Prisma ORM
+- ✅ **لوحة تحكم تفاعلية** مع مؤشرات KPI متقدمة
+- ✅ **إدارة العملاء** (إضافة، تعديل، حذف، بحث، فلترة)
+- ✅ **إدارة الوحدات** (إضافة، تعديل، حذف، ربط بالشركاء)
+- ✅ **إدارة الشركاء** ومجموعات الشركاء (النسب، التقارير)
+- ✅ **نظام العقود** (كاش، تقسيط، تجاري)
+- ✅ **نظام الأقساط** (120 قسط تجريبي، دفعات، متابعة)
+- ✅ **نظام الخزينة** والسندات (قبض، صرف، تحويلات)
+- ✅ **نظام السماسرة** (عمولات، دفعات، متابعة)
+- ✅ **نظام State Management** بـ React Context
+- ✅ **نظام Undo/Redo** مع قاعدة البيانات (50 خطوة)
+- ✅ **دعم الثيم الفاتح والداكن** مع تخصيص الألوان
+- ✅ **واجهة عربية متجاوبة** مع دعم RTL كامل
+- ✅ **تصدير البيانات** (CSV، PDF، Excel)
+- ✅ **نسخ احتياطي واستعادة** تلقائي
+- ✅ **سجل التغييرات** (Audit Log) شامل
+- ✅ **API Routes** متقدمة للتفاعل مع قاعدة البيانات
+- ✅ **اختبارات شاملة** مع بيانات تجريبية (120 سجل)
 
-### 🔄 الميزات المتاحة
-- ✅ إدارة العملاء (إضافة، تعديل، حذف، بحث)
-- ✅ إدارة الوحدات (إضافة، تعديل، حذف، بحث)
-- ✅ إدارة الشركاء ومجموعات الشركاء
-- ✅ نظام الخزينة والسندات
-- ✅ التقارير والإحصائيات
-- ✅ النسخ الاحتياطي والاستعادة
-- ✅ سجل التغييرات (Audit Log)
+### 🎯 الإنجازات المحققة
+- ✅ **18 جدول** في قاعدة البيانات مع علاقات معقدة
+- ✅ **20+ API Route** متطورة ومتشابكة
+- ✅ **9 شاشات رئيسية** مكتملة بالكامل
+- ✅ **8 تقارير متنوعة** مع فلترة متقدمة
+- ✅ **اختبار قياسي شامل** مع بيانات حقيقية
+- ✅ **ربط البيانات** بين جميع الشاشات والشركاء
 
-### 🔄 الميزات قيد التطوير
-- ⏳ إدارة العقود والأقساط
-- ⏳ إدارة السماسرة
-- ⏳ تحسينات الواجهة والأداء
+## 🛠️ التقنيات المستخدمة
 
-## التقنيات المستخدمة
+- **Frontend**: Next.js 15, React 19, TypeScript 5
+- **Backend**: Next.js API Routes مع Server Actions
+- **Database**: SQLite/PostgreSQL مع Prisma ORM 6.16.2
+- **Styling**: Tailwind CSS, CSS Variables, RTL Support
+- **State Management**: React Context API + useReducer
+- **Data Validation**: Prisma Schema Validation + TypeScript
+- **Charts**: Chart.js مع رسوم بيانية تفاعلية
+- **Testing**: Manual Testing مع 120+ سجل تجريبي
+- **Deployment**: Ready for Vercel, Netlify, Railway
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Backend**: Next.js API Routes
-- **Database**: PostgreSQL مع Prisma ORM
-- **Styling**: Tailwind CSS, CSS Variables
-- **State Management**: React Context API
-- **Data Validation**: Prisma Schema Validation
-- **Icons**: Custom CSS (يمكن إضافة Lucide أو Heroicons لاحقاً)
-
-## إعداد قاعدة البيانات
+## 🚀 إعداد المشروع
 
 ### متطلبات النظام
-- PostgreSQL 12+
 - Node.js 18+
 - npm أو yarn
 
-### خطوات الإعداد
+### خطوات الإعداد السريع
 
+#### الطريقة السريعة (SQLite - جاهز للاستخدام فوراً)
+```bash
+# 1. تثبيت التبعيات
+npm install
+
+# 2. إعداد قاعدة البيانات (SQLite)
+npm run db:push
+
+# 3. إعداد البيانات الأولية
+npm run db:setup
+
+# 4. إنشاء بيانات تجريبية شاملة
+npx tsx scripts/create-test-data.ts
+
+# 5. تشغيل المشروع
+npm run dev
+```
+
+#### الطريقة المتقدمة (PostgreSQL)
 1. **تثبيت PostgreSQL:**
 ```bash
 # Ubuntu/Debian
@@ -78,42 +99,19 @@ GRANT ALL PRIVILEGES ON DATABASE estate_db TO estate_user;
 \q
 ```
 
-3. **إعداد متغيرات البيئة:**
-```bash
-# نسخ ملف البيئة
-cp .env.example .env
-
-# تحرير المتغيرات
-nano .env
-```
-
-4. **تحديث .env:**
+3. **تحديث متغيرات البيئة:**
 ```env
 DATABASE_URL="postgresql://estate_user:your_password_here@localhost:5432/estate_db?schema=public"
-NEXTAUTH_SECRET="your-super-secret-jwt-key-here"
-NEXTAUTH_URL="http://localhost:3000"
 ```
 
-5. **إعداد قاعدة البيانات:**
+4. **إعداد قاعدة البيانات:**
 ```bash
-# إنشاء Prisma client
 npm run db:generate
-
-# إنشاء الجداول
 npm run db:push
-
-# إعداد البيانات الأولية
 npm run db:setup
 ```
 
-6. **تشغيل المشروع:**
-```bash
-npm run dev
-```
-
-### إعداد Docker (اختياري)
-
-إذا كنت تريد استخدام Docker:
+### ⚡ الإعداد بـ Docker (اختياري)
 
 ```bash
 # تشغيل PostgreSQL
@@ -121,54 +119,65 @@ docker-compose up -d postgres
 
 # التحقق من تشغيل الخدمات
 docker-compose ps
-```
 
-ثم قم بتحديث متغيرات البيئة لاستخدام Docker:
-
-```env
+# تحديث متغيرات البيئة
 DATABASE_URL="postgresql://estate_user:estate_password@localhost:5432/estate_db?schema=public"
 ```
 
-## API Routes
+## 🛣️ API Routes المُكتملة
 
-النظام يوفر API routes للتفاعل مع قاعدة البيانات:
+النظام يوفر **20+ API Route** متقدمة للتفاعل مع قاعدة البيانات:
 
-### العملاء
-- `GET /api/customers` - جلب جميع العملاء
-- `POST /api/customers` - إضافة عميل جديد
+### 👥 العملاء
+- `GET /api/customers` - جلب جميع العملاء مع فلترة
+- `POST /api/customers` - إضافة عميل جديد مع التحقق
 
-### الوحدات
-- `GET /api/units` - جلب جميع الوحدات
-- `POST /api/units` - إضافة وحدة جديدة
+### 🏠 الوحدات
+- `GET /api/units` - جلب جميع الوحدات مع الشركاء
+- `POST /api/units` - إضافة وحدة جديدة مع ربط الشركاء
 
-### العقود
-- `GET /api/contracts` - جلب جميع العقود
-- `POST /api/contracts` - إضافة عقد جديد
+### 📋 العقود
+- `GET /api/contracts` - جلب العقود مع العملاء والوحدات
+- `POST /api/contracts` - إنشاء عقد (كاش/تقسيط/تجاري)
 
-### الأقساط
-- `GET /api/installments` - جلب جميع الأقساط
+### 💰 الأقساط
+- `GET /api/installments` - جلب الأقساط مع الفلترة
 - `POST /api/installments` - إضافة قسط جديد
-- `PUT /api/installments` - تحديث قسط
+- `PUT /api/installments/[id]` - تحديث قسط
+- `POST /api/installments/[id]/pay` - دفع قسط
 
-### السندات
-- `GET /api/vouchers` - جلب جميع السندات
-- `POST /api/vouchers` - إضافة سند جديد
+### 🏢 السماسرة
+- `GET /api/brokers` - جلب السماسرة
+- `POST /api/brokers` - إضافة سمسار جديد
+- `PUT /api/broker-dues/[id]/pay` - دفع عمولة سمسار
 
-### الخزن
-- `GET /api/safes` - جلب جميع الخزن
-- `POST /api/safes` - إضافة خزنة جديدة
-
-### الشركاء
-- `GET /api/partners` - جلب جميع الشركاء
+### 🤝 الشركاء (النظام المتقدم)
+- `GET /api/partners` - جلب الشركاء مع التفاصيل
 - `POST /api/partners` - إضافة شريك جديد
+- `GET /api/partner-debts` - ديون الشركاء
+- `POST /api/partner-debts/[id]/pay` - دفع دين شريك
+- `GET /api/partner-groups` - مجموعات الشركاء
+- `POST /api/partner-groups` - إنشاء مجموعة شركاء
+- `POST /api/partner-groups/add-partner` - إضافة شريك للمجموعة
+- `POST /api/partner-groups/remove-partner` - إزالة شريك من المجموعة
+- `POST /api/unit-partners` - ربط شريك بوحدة
 
-### الإعدادات
+### 🏦 الخزينة والسندات
+- `GET /api/safes` - جلب الخزن مع الأرصدة
+- `POST /api/safes` - إضافة خزنة جديدة
+- `GET /api/vouchers` - جلب السندات (قبض/صرف)
+- `POST /api/vouchers` - إضافة سند جديد
+- `GET /api/transfers` - تحويلات بين الخزن
+- `POST /api/transfers` - تحويل بين الخزن
+
+### ⚙️ النظام
 - `GET /api/settings` - جلب الإعدادات
 - `PUT /api/settings` - تحديث الإعدادات
-
-### سجل التغييرات
-- `GET /api/audit-logs` - جلب سجل التغييرات
-- `POST /api/audit-logs` - إضافة سجل تغيير
+- `GET /api/audit-logs` - سجل التغييرات الشامل
+- `GET /api/backup` - إنشاء نسخة احتياطية
+- `POST /api/backup/restore` - استعادة من نسخة احتياطية
+- `POST /api/reset` - إعادة تعيين قاعدة البيانات
+- `GET /api/reports` - التقارير المتنوعة
 
 ## وظائف قاعدة البيانات
 

@@ -1,19 +1,23 @@
-# نظام إدارة العقارات - Next.js
+# نظام إدارة العقارات - Next.js + PostgreSQL
 
-نظام شامل لإدارة العقارات والعملاء والعقود مبني بـ Next.js و TypeScript.
+نظام شامل لإدارة العقارات والعملاء والعقود مبني بـ Next.js و TypeScript مع قاعدة بيانات PostgreSQL.
 
 ## الميزات الرئيسية
 
 ### ✨ الميزات المُكتملة
+- ✅ قاعدة بيانات PostgreSQL مع Prisma ORM
 - ✅ لوحة تحكم تفاعلية مع مؤشرات KPI
 - ✅ إدارة العملاء (إضافة، تعديل، حذف، بحث)
 - ✅ إدارة الوحدات (إضافة، تعديل، حذف، بحث)
+- ✅ إدارة الشركاء ومجموعات الشركاء
+- ✅ نظام الخزنة والسندات
 - ✅ نظام state management بـ React Context
-- ✅ حفظ البيانات في localStorage
-- ✅ نظام undo/redo
+- ✅ نظام undo/redo مع قاعدة البيانات
 - ✅ دعم الثيم الفاتح والداكن
 - ✅ واجهة عربية متجاوبة
 - ✅ تصدير البيانات (CSV)
+- ✅ نسخ احتياطي واستعادة
+- ✅ API routes للتفاعل مع قاعدة البيانات
 
 ### 🔄 الميزات قيد التطوير
 - ⏳ إدارة العقود والأقساط
@@ -25,11 +29,169 @@
 
 ## التقنيات المستخدمة
 
-- **Frontend**: Next.js 14, React 18, TypeScript
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL مع Prisma ORM
 - **Styling**: Tailwind CSS, CSS Variables
+- **Authentication**: JWT (قيد التطوير)
 - **State Management**: React Context API
-- **Data Storage**: localStorage
+- **Data Validation**: Prisma Schema Validation
 - **Icons**: Custom CSS (يمكن إضافة Lucide أو Heroicons لاحقاً)
+
+## إعداد قاعدة البيانات
+
+### متطلبات النظام
+- PostgreSQL 12+
+- Node.js 18+
+- npm أو yarn
+
+### خطوات الإعداد
+
+1. **تثبيت PostgreSQL:**
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+# macOS
+brew install postgresql
+
+# تشغيل الخدمة
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+2. **إنشاء قاعدة البيانات:**
+```bash
+# الدخول كمستخدم postgres
+sudo -u postgres psql
+
+# إنشاء قاعدة البيانات
+CREATE DATABASE estate_db;
+CREATE USER estate_user WITH PASSWORD 'your_password_here';
+GRANT ALL PRIVILEGES ON DATABASE estate_db TO estate_user;
+\q
+```
+
+3. **إعداد متغيرات البيئة:**
+```bash
+# نسخ ملف البيئة
+cp .env.example .env
+
+# تحرير المتغيرات
+nano .env
+```
+
+4. **تحديث .env:**
+```env
+DATABASE_URL="postgresql://estate_user:your_password_here@localhost:5432/estate_db?schema=public"
+NEXTAUTH_SECRET="your-super-secret-jwt-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+5. **إعداد قاعدة البيانات:**
+```bash
+# إنشاء Prisma client
+npm run db:generate
+
+# إنشاء الجداول
+npm run db:push
+
+# إعداد البيانات الأولية
+npm run db:setup
+```
+
+6. **تشغيل المشروع:**
+```bash
+npm run dev
+```
+
+### إعداد Docker (اختياري)
+
+إذا كنت تريد استخدام Docker:
+
+```bash
+# تشغيل PostgreSQL و pgAdmin
+docker-compose up -d
+
+# التحقق من تشغيل الخدمات
+docker-compose ps
+
+# الوصول لـ pgAdmin
+# http://localhost:5050
+# البريد الإلكتروني: admin@estate.com
+# كلمة المرور: admin
+```
+
+ثم قم بتحديث متغيرات البيئة لاستخدام Docker:
+
+```env
+DATABASE_URL="postgresql://estate_user:estate_password@localhost:5432/estate_db?schema=public"
+```
+
+## API Routes
+
+النظام يوفر API routes للتفاعل مع قاعدة البيانات:
+
+### العملاء
+- `GET /api/customers` - جلب جميع العملاء
+- `POST /api/customers` - إضافة عميل جديد
+
+### الوحدات
+- `GET /api/units` - جلب جميع الوحدات
+- `POST /api/units` - إضافة وحدة جديدة
+
+### العقود
+- `GET /api/contracts` - جلب جميع العقود
+- `POST /api/contracts` - إضافة عقد جديد
+
+### الأقساط
+- `GET /api/installments` - جلب جميع الأقساط
+- `POST /api/installments` - إضافة قسط جديد
+- `PUT /api/installments` - تحديث قسط
+
+### السندات
+- `GET /api/vouchers` - جلب جميع السندات
+- `POST /api/vouchers` - إضافة سند جديد
+
+### الخزن
+- `GET /api/safes` - جلب جميع الخزن
+- `POST /api/safes` - إضافة خزنة جديدة
+
+### الشركاء
+- `GET /api/partners` - جلب جميع الشركاء
+- `POST /api/partners` - إضافة شريك جديد
+
+### الإعدادات
+- `GET /api/settings` - جلب الإعدادات
+- `PUT /api/settings` - تحديث الإعدادات
+
+### سجل التغييرات
+- `GET /api/audit-logs` - جلب سجل التغييرات
+- `POST /api/audit-logs` - إضافة سجل تغيير
+
+## وظائف قاعدة البيانات
+
+### النسخ الاحتياطي
+```bash
+# إنشاء نسخة احتياطية
+npm run db:backup
+
+# استعادة من نسخة احتياطية
+npm run db:restore path/to/backup.json
+```
+
+### إدارة قاعدة البيانات
+```bash
+# إنشاء Prisma client
+npm run db:generate
+
+# دفع التغييرات لقاعدة البيانات
+npm run db:push
+
+# إنشاء migration
+npm run db:migrate
+```
 
 ## البنية المعمارية
 

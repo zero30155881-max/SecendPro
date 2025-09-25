@@ -1,4 +1,5 @@
 import { AppState, Customer, Unit, Partner, Broker, Safe, Voucher, Contract, Installment, UnitPartner, PartnerGroup, PartnerDebt, BrokerDue, Transfer, AuditLog } from '@/types';
+import { prisma } from '@/lib/prisma';
 
 export function uid(prefix: string): string {
   return prefix + '-' + Math.random().toString(36).slice(2, 9);
@@ -86,16 +87,17 @@ export function calculateKpis(state: AppState, filters?: { from?: string; to?: s
   };
 }
 
-export function logAction(state: AppState, description: string, details: Record<string, any> = {}): void {
-  const newLog: AuditLog = {
-    id: uid('LOG'),
-    timestamp: new Date().toISOString(),
-    description,
-    details
-  };
-  state.auditLog.push(newLog);
-  if (state.auditLog.length > 500) {
-    state.auditLog = state.auditLog.slice(-500);
+export async function logAction(description: string, details: Record<string, any> = {}): Promise<void> {
+  try {
+    await prisma.auditLog.create({
+      data: {
+        action: 'SYSTEM',
+        description,
+        details: JSON.stringify(details)
+      }
+    });
+  } catch (error) {
+    console.error('Error logging action:', error);
   }
 }
 
@@ -177,86 +179,112 @@ export function calcRemaining(state: AppState, unit: Unit): number {
   return Math.max(0, remaining);
 }
 
-export function processPayment(
-  state: AppState,
+export async function processPayment(
   unitId: string,
   amount: number,
   method: string,
   date: string,
   safeId: string,
   installmentId: string | null = null
-): boolean {
-  if (!amount || !safeId) {
-    console.error('بيانات الدفع غير مكتملة.');
-    return false;
-  }
-
-  const safe = state.safes.find(s => s.id === safeId);
-  if (!safe) {
-    console.error('لم يتم العثور على الخزنة المحددة.');
-    return false;
-  }
-
-  let remainingAmountToProcess = amount;
-
-  // Create a receipt voucher for the payment
-  const customer = custById(state, state.contracts.find(c => c.unitId === unitId)?.customerId);
-  const voucher: Voucher = {
-    id: uid('V'),
-    type: 'receipt',
-    date: date,
-    amount: amount,
-    safeId: safeId,
-    description: `سداد دفعة للوحدة ${getUnitDisplayName(unitById(state, unitId) || {} as Unit)}`,
-    payer: customer?.name || 'غير محدد',
-    linked_ref: installmentId || unitId
-  };
-  state.vouchers.push(voucher);
-  logAction(state, 'تسجيل سند قبض', { voucherId: voucher.id, unitId, amount, safeId });
-
-  // Add money to the safe
-  safe.balance = (safe.balance || 0) + amount;
-
-  // If this payment is for an installment, apply it to the installments
-  const installmentsToPay = state.installments
-    .filter(i => i.unitId === unitId && i.status === 'غير مدفوع')
-    .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
-
-  if (installmentsToPay.length === 0 && installmentId) {
-    console.warn(`Payment made for installment ${installmentId}, but no payable installments found for unit ${unitId}.`);
-    return true;
-  }
-
-  for (const inst of installmentsToPay) {
-    if (remainingAmountToProcess <= 0) break;
-
-    const amountToPayOnThisInstallment = Math.min(remainingAmountToProcess, inst.amount);
-    if (typeof inst.originalAmount === 'number') {
-      inst.originalAmount = inst.amount;
-    }
-    inst.amount -= amountToPayOnThisInstallment;
-    remainingAmountToProcess -= amountToPayOnThisInstallment;
-
-    if (inst.amount <= 0.005) { // Use a small epsilon for float comparison
-      inst.amount = 0;
-      inst.status = 'مدفوع';
-      inst.paymentDate = date;
-    } else {
-      inst.status = 'مدفوع جزئياً';
+): Promise<boolean> {
+  try {
+    if (!amount || !safeId) {
+      console.error('بيانات الدفع غير مكتملة.');
+      return false;
     }
 
-    logAction(state, 'تطبيق دفعة على قسط', {
-      installmentId: inst.id,
-      paidAmount: amountToPayOnThisInstallment,
-      remainingAmount: inst.amount
+    // التحقق من وجود الخزنة
+    const safe = await prisma.safe.findUnique({
+      where: { id: safeId }
     });
-  }
 
-  if (remainingAmountToProcess > 0.005) {
-    console.log(`Overpayment of ${egp(remainingAmountToProcess)} for unit ${unitId}.`);
-  }
+    if (!safe) {
+      console.error('لم يتم العثور على الخزنة المحددة.');
+      return false;
+    }
 
-  return true; // Success
+    let remainingAmountToProcess = amount;
+
+    // Get contract and customer info
+    const contract = await prisma.contract.findFirst({
+      where: { unitId },
+      include: { customer: true }
+    });
+
+    // Create a receipt voucher for the payment
+    const voucher = await prisma.voucher.create({
+      data: {
+        type: 'receipt',
+        date: new Date(date),
+        amount: amount,
+        safeId: safeId,
+        description: `سداد دفعة للوحدة ${unitId}`,
+        payer: contract?.customer.name || 'غير محدد',
+        linkedRef: installmentId || unitId
+      }
+    });
+
+    // Update safe balance
+    await prisma.safe.update({
+      where: { id: safeId },
+      data: { balance: { increment: amount } }
+    });
+
+    // تسجيل العملية
+    await logAction('تسجيل سند قبض', { voucherId: voucher.id, unitId, amount, safeId });
+
+    // If this payment is for an installment, apply it to the installments
+    const installmentsToPay = await prisma.installment.findMany({
+      where: {
+        unitId: unitId,
+        status: 'غير مدفوع',
+        ...(installmentId ? { id: installmentId } : {})
+      },
+      orderBy: { dueDate: 'asc' }
+    });
+
+    if (installmentsToPay.length === 0 && installmentId) {
+      console.warn(`Payment made for installment ${installmentId}, but no payable installments found for unit ${unitId}.`);
+      return true;
+    }
+
+    for (const inst of installmentsToPay) {
+      if (remainingAmountToProcess <= 0) break;
+
+      const amountToPayOnThisInstallment = Math.min(remainingAmountToProcess, inst.amount.toNumber());
+
+      await prisma.installment.update({
+        where: { id: inst.id },
+        data: {
+          amount: inst.amount.toNumber() - amountToPayOnThisInstallment,
+          ...(inst.amount.toNumber() - amountToPayOnThisInstallment <= 0.005 ? {
+            status: 'مدفوع',
+            paymentDate: new Date(date)
+          } : {
+            status: 'مدفوع جزئياً'
+          })
+        }
+      });
+
+      remainingAmountToProcess -= amountToPayOnThisInstallment;
+
+      // تسجيل العملية
+      await logAction('تطبيق دفعة على قسط', {
+        installmentId: inst.id,
+        paidAmount: amountToPayOnThisInstallment,
+        remainingAmount: inst.amount.toNumber() - amountToPayOnThisInstallment
+      });
+    }
+
+    if (remainingAmountToProcess > 0.005) {
+      console.log(`Overpayment of ${egp(remainingAmountToProcess)} for unit ${unitId}.`);
+    }
+
+    return true; // Success
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    return false;
+  }
 }
 
 export function exportToCSV(headers: string[], rows: any[], filename: string): void {

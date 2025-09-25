@@ -1,47 +1,35 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { AppState, AppSettings } from '@/types';
-import { uid, logAction } from '@/utils';
+import { AppState, AppSettings, Customer, Unit, Partner, Contract, Installment, Safe, Voucher, Broker, PartnerDebt } from '@/types';
+import { uid } from '@/utils';
+import { prisma } from '@/lib/prisma';
 
 interface AppContextType {
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
-  saveState: () => void;
-  loadState: () => Promise<void>;
-  persist: () => Promise<void>;
+  loadData: () => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 
 type AppAction =
-  | { type: 'SET_STATE'; payload: Partial<AppState> }
-  | { type: 'ADD_CUSTOMER'; payload: any }
-  | { type: 'UPDATE_CUSTOMER'; payload: { id: string; data: any } }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_CUSTOMERS'; payload: Customer[] }
+  | { type: 'SET_UNITS'; payload: Unit[] }
+  | { type: 'SET_PARTNERS'; payload: Partner[] }
+  | { type: 'SET_CONTRACTS'; payload: Contract[] }
+  | { type: 'SET_INSTALLMENTS'; payload: Installment[] }
+  | { type: 'SET_SAFES'; payload: Safe[] }
+  | { type: 'SET_VOUCHERS'; payload: Voucher[] }
+  | { type: 'SET_BROKERS'; payload: Broker[] }
+  | { type: 'SET_PARTNER_DEBTS'; payload: PartnerDebt[] }
+  | { type: 'SET_SETTINGS'; payload: AppSettings }
+  | { type: 'ADD_CUSTOMER'; payload: Customer }
+  | { type: 'UPDATE_CUSTOMER'; payload: Customer }
   | { type: 'DELETE_CUSTOMER'; payload: string }
-  | { type: 'ADD_UNIT'; payload: any }
-  | { type: 'UPDATE_UNIT'; payload: { id: string; data: any } }
-  | { type: 'DELETE_UNIT'; payload: string }
-  | { type: 'ADD_CONTRACT'; payload: any }
-  | { type: 'UPDATE_CONTRACT'; payload: { id: string; data: any } }
-  | { type: 'DELETE_CONTRACT'; payload: string }
-  | { type: 'ADD_INSTALLMENT'; payload: any }
-  | { type: 'UPDATE_INSTALLMENT'; payload: { id: string; data: any } }
-  | { type: 'DELETE_INSTALLMENT'; payload: string }
-  | { type: 'ADD_VOUCHER'; payload: any }
-  | { type: 'DELETE_VOUCHER'; payload: string }
-  | { type: 'ADD_SAFE'; payload: any }
-  | { type: 'UPDATE_SAFE'; payload: { id: string; data: any } }
-  | { type: 'DELETE_SAFE'; payload: string }
-  | { type: 'ADD_PARTNER'; payload: any }
-  | { type: 'UPDATE_PARTNER'; payload: { id: string; data: any } }
-  | { type: 'DELETE_PARTNER'; payload: string }
-  | { type: 'ADD_BROKER'; payload: any }
-  | { type: 'UPDATE_BROKER'; payload: { id: string; data: any } }
-  | { type: 'DELETE_BROKER'; payload: string }
-  | { type: 'UPDATE_SETTINGS'; payload: AppSettings }
-  | { type: 'SET_LOCKED'; payload: boolean }
-  | { type: 'ADD_TO_HISTORY'; payload: AppState }
-  | { type: 'UNDO' }
-  | { type: 'REDO' };
+  | { type: 'ADD_UNIT'; payload: Unit }
+  | { type: 'UPDATE_UNIT'; payload: Unit }
+  | { type: 'DELETE_UNIT'; payload: string };
 
 const initialState: AppState = {
   customers: [],
@@ -52,7 +40,7 @@ const initialState: AppState = {
   installments: [],
   payments: [],
   partnerDebts: [],
-  safes: [{ id: uid('S'), name: 'الخزنة الرئيسية', balance: 0 }],
+  safes: [],
   transfers: [],
   auditLog: [],
   vouchers: [],
@@ -65,18 +53,47 @@ const initialState: AppState = {
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'SET_STATE':
-      return { ...state, ...action.payload };
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+
+    case 'SET_CUSTOMERS':
+      return { ...state, customers: action.payload };
+
+    case 'SET_UNITS':
+      return { ...state, units: action.payload };
+
+    case 'SET_PARTNERS':
+      return { ...state, partners: action.payload };
+
+    case 'SET_CONTRACTS':
+      return { ...state, contracts: action.payload };
+
+    case 'SET_INSTALLMENTS':
+      return { ...state, installments: action.payload };
+
+    case 'SET_SAFES':
+      return { ...state, safes: action.payload };
+
+    case 'SET_VOUCHERS':
+      return { ...state, vouchers: action.payload };
+
+    case 'SET_BROKERS':
+      return { ...state, brokers: action.payload };
+
+    case 'SET_PARTNER_DEBTS':
+      return { ...state, partnerDebts: action.payload };
+
+    case 'SET_SETTINGS':
+      return { ...state, settings: action.payload };
 
     case 'ADD_CUSTOMER':
-      logAction(state, 'إضافة عميل جديد', { id: action.payload.id, name: action.payload.name });
       return { ...state, customers: [...state.customers, action.payload] };
 
     case 'UPDATE_CUSTOMER':
       return {
         ...state,
         customers: state.customers.map(c =>
-          c.id === action.payload.id ? { ...c, ...action.payload.data } : c
+          c.id === action.payload.id ? action.payload : c
         )
       };
 
@@ -87,14 +104,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
 
     case 'ADD_UNIT':
-      logAction(state, 'إضافة وحدة جديدة', { id: action.payload.id, code: action.payload.code });
       return { ...state, units: [...state.units, action.payload] };
 
     case 'UPDATE_UNIT':
       return {
         ...state,
         units: state.units.map(u =>
-          u.id === action.payload.id ? { ...u, ...action.payload.data } : u
+          u.id === action.payload.id ? action.payload : u
         )
       };
 
@@ -104,119 +120,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
         units: state.units.filter(u => u.id !== action.payload)
       };
 
-    case 'ADD_CONTRACT':
-      logAction(state, 'إنشاء عقد جديد', { contractId: action.payload.id, unitId: action.payload.unitId, customerId: action.payload.customerId, price: action.payload.totalPrice });
-      return { ...state, contracts: [...state.contracts, action.payload] };
-
-    case 'UPDATE_CONTRACT':
-      return {
-        ...state,
-        contracts: state.contracts.map(c =>
-          c.id === action.payload.id ? { ...c, ...action.payload.data } : c
-        )
-      };
-
-    case 'DELETE_CONTRACT':
-      return {
-        ...state,
-        contracts: state.contracts.filter(c => c.id !== action.payload)
-      };
-
-    case 'ADD_INSTALLMENT':
-      return { ...state, installments: [...state.installments, action.payload] };
-
-    case 'UPDATE_INSTALLMENT':
-      return {
-        ...state,
-        installments: state.installments.map(i =>
-          i.id === action.payload.id ? { ...i, ...action.payload.data } : i
-        )
-      };
-
-    case 'DELETE_INSTALLMENT':
-      return {
-        ...state,
-        installments: state.installments.filter(i => i.id !== action.payload)
-      };
-
-    case 'ADD_VOUCHER':
-      return { ...state, vouchers: [...state.vouchers, action.payload] };
-
-    case 'DELETE_VOUCHER':
-      return {
-        ...state,
-        vouchers: state.vouchers.filter(v => v.id !== action.payload)
-      };
-
-    case 'ADD_SAFE':
-      logAction(state, 'إضافة خزنة جديدة', { safeId: action.payload.id, name: action.payload.name, initialBalance: action.payload.balance });
-      return { ...state, safes: [...state.safes, action.payload] };
-
-    case 'UPDATE_SAFE':
-      return {
-        ...state,
-        safes: state.safes.map(s =>
-          s.id === action.payload.id ? { ...s, ...action.payload.data } : s
-        )
-      };
-
-    case 'DELETE_SAFE':
-      return {
-        ...state,
-        safes: state.safes.filter(s => s.id !== action.payload)
-      };
-
-    case 'ADD_PARTNER':
-      logAction(state, 'إضافة شريك جديد', { partnerId: action.payload.id, name: action.payload.name });
-      return { ...state, partners: [...state.partners, action.payload] };
-
-    case 'UPDATE_PARTNER':
-      return {
-        ...state,
-        partners: state.partners.map(p =>
-          p.id === action.payload.id ? { ...p, ...action.payload.data } : p
-        )
-      };
-
-    case 'DELETE_PARTNER':
-      return {
-        ...state,
-        partners: state.partners.filter(p => p.id !== action.payload)
-      };
-
-    case 'ADD_BROKER':
-      logAction(state, 'إضافة سمسار جديد', { id: action.payload.id, name: action.payload.name });
-      return { ...state, brokers: [...state.brokers, action.payload] };
-
-    case 'UPDATE_BROKER':
-      return {
-        ...state,
-        brokers: state.brokers.map(b =>
-          b.id === action.payload.id ? { ...b, ...action.payload.data } : b
-        )
-      };
-
-    case 'DELETE_BROKER':
-      return {
-        ...state,
-        brokers: state.brokers.filter(b => b.id !== action.payload)
-      };
-
-    case 'UPDATE_SETTINGS':
-      return { ...state, settings: { ...state.settings, ...action.payload } };
-
-    case 'SET_LOCKED':
-      return { ...state, locked: action.payload };
-
-    case 'ADD_TO_HISTORY':
-      return state; // Handled separately
-
-    case 'UNDO':
-      return state; // Handled separately
-
-    case 'REDO':
-      return state; // Handled separately
-
     default:
       return state;
   }
@@ -224,107 +127,109 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'estate_app_state';
-const HISTORY_KEY = 'estate_app_history';
-const HISTORY_INDEX_KEY = 'estate_app_history_index';
-
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, initialState);
-  const [historyStack, setHistoryStack] = React.useState<AppState[]>([]);
-  const [historyIndex, setHistoryIndex] = React.useState(-1);
+  const [state, dispatch] = useReducer(appReducer, { ...initialState, loading: true });
 
-  const loadState = async (): Promise<void> => {
+  const loadData = async (): Promise<void> => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsedState = JSON.parse(stored);
-        dispatch({ type: 'SET_STATE', payload: parsedState });
-      }
+      dispatch({ type: 'SET_LOADING', payload: true });
 
-      const storedHistory = localStorage.getItem(HISTORY_KEY);
-      if (storedHistory) {
-        const parsedHistory = JSON.parse(storedHistory);
-        setHistoryStack(parsedHistory);
-      }
+      // تحميل البيانات من قاعدة البيانات
+      const [
+        customers,
+        units,
+        partners,
+        contracts,
+        installments,
+        safes,
+        vouchers,
+        brokers,
+        partnerDebts,
+        settings
+      ] = await Promise.all([
+        prisma.customer.findMany({ orderBy: { createdAt: 'desc' } }),
+        prisma.unit.findMany({
+          include: {
+            unitPartners: {
+              include: {
+                partner: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        }),
+        prisma.partner.findMany({ orderBy: { createdAt: 'desc' } }),
+        prisma.contract.findMany({
+          include: {
+            unit: true,
+            customer: true,
+            installments: true,
+            brokerDues: true,
+            vouchers: true
+          },
+          orderBy: { createdAt: 'desc' }
+        }),
+        prisma.installment.findMany({
+          include: {
+            unit: true,
+            contract: true
+          },
+          orderBy: { dueDate: 'asc' }
+        }),
+        prisma.safe.findMany({ orderBy: { createdAt: 'desc' } }),
+        prisma.voucher.findMany({
+          include: {
+            safe: true,
+            contract: true
+          },
+          orderBy: { date: 'desc' }
+        }),
+        prisma.broker.findMany({ orderBy: { createdAt: 'desc' } }),
+        prisma.partnerDebt.findMany({
+          include: {
+            unit: true,
+            payingPartner: true,
+            owedPartner: true
+          },
+          orderBy: { dueDate: 'asc' }
+        }),
+        prisma.setting.findFirst({ where: { id: 'app_settings' } })
+      ]);
 
-      const storedIndex = localStorage.getItem(HISTORY_INDEX_KEY);
-      if (storedIndex) {
-        setHistoryIndex(parseInt(storedIndex, 10));
-      }
+      // تحديث الحالة
+      dispatch({ type: 'SET_CUSTOMERS', payload: customers });
+      dispatch({ type: 'SET_UNITS', payload: units });
+      dispatch({ type: 'SET_PARTNERS', payload: partners });
+      dispatch({ type: 'SET_CONTRACTS', payload: contracts });
+      dispatch({ type: 'SET_INSTALLMENTS', payload: installments });
+      dispatch({ type: 'SET_SAFES', payload: safes });
+      dispatch({ type: 'SET_VOUCHERS', payload: vouchers });
+      dispatch({ type: 'SET_BROKERS', payload: brokers });
+      dispatch({ type: 'SET_PARTNER_DEBTS', payload: partnerDebts });
+      dispatch({ type: 'SET_SETTINGS', payload: settings || { theme: 'dark', font: 16, pass: null } });
+
     } catch (error) {
-      console.error('Failed to load state from localStorage:', error);
+      console.error('Error loading data:', error);
+      // يمكن إضافة معالجة أخطاء أفضل هنا
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  const saveState = (): void => {
-    try {
-      const newHistory = historyStack.slice(0, historyIndex + 1);
-      newHistory.push(JSON.parse(JSON.stringify(state)));
-      if (newHistory.length > 50) {
-        newHistory.shift();
-      }
-      const newIndex = newHistory.length - 1;
-
-      setHistoryStack(newHistory);
-      setHistoryIndex(newIndex);
-
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory));
-      localStorage.setItem(HISTORY_INDEX_KEY, newIndex.toString());
-    } catch (error) {
-      console.error('Failed to save state to history:', error);
-    }
+  const refreshData = async (): Promise<void> => {
+    await loadData();
   };
 
-  const persist = async (): Promise<void> => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (error) {
-      console.error('Failed to persist state to localStorage:', error);
-    }
-  };
-
-  const undo = (): void => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      const restoredState = historyStack[newIndex];
-
-      setHistoryIndex(newIndex);
-      dispatch({ type: 'SET_STATE', payload: restoredState });
-
-      localStorage.setItem(HISTORY_INDEX_KEY, newIndex.toString());
-    }
-  };
-
-  const redo = (): void => {
-    if (historyIndex < historyStack.length - 1) {
-      const newIndex = historyIndex + 1;
-      const restoredState = historyStack[newIndex];
-
-      setHistoryIndex(newIndex);
-      dispatch({ type: 'SET_STATE', payload: restoredState });
-
-      localStorage.setItem(HISTORY_INDEX_KEY, newIndex.toString());
-    }
-  };
-
-  // Load state on mount
+  // Load data on mount
   useEffect(() => {
-    loadState();
+    loadData();
   }, []);
-
-  // Save state to localStorage whenever state changes
-  useEffect(() => {
-    if (state !== initialState) {
-      persist();
-    }
-  }, [state]);
 
   const contextValue: AppContextType = {
     state,
     dispatch,
-    saveState,
-    loadState,
-    persist
+    loadData,
+    refreshData
   };
 
   return (

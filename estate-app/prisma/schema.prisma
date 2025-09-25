@@ -1,0 +1,323 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// نموذج المستخدمين
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // العلاقات
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+// نموذج العملاء
+model Customer {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String
+  nationalId String?
+  address    String?
+  status     String   @default("نشط")
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // العلاقات
+  contracts Contract[]
+
+  @@map("customers")
+}
+
+// نموذج الوحدات
+model Unit {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  name       String
+  status     String   @default("متاحة")
+  area       String?
+  floor      String?
+  building   String?
+  notes      String?
+  totalPrice Decimal  @db.Decimal(15,2)
+  unitType   String   @default("سكني")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // العلاقات
+  contracts     Contract[]
+  unitPartners  UnitPartner[]
+  installments  Installment[]
+  partnerDebts  PartnerDebt[]
+
+  @@map("units")
+}
+
+// نموذج الشركاء
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // العلاقات
+  unitPartners    UnitPartner[]
+  partnerGroups   PartnerGroupPartner[]
+  payingDebts     PartnerDebt[]         @relation("PayingPartner")
+  owedDebts       PartnerDebt[]         @relation("OwedPartner")
+
+  @@map("partners")
+}
+
+// نموذج مجموعات الشركاء
+model PartnerGroup {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // العلاقات
+  partners PartnerGroupPartner[]
+
+  @@map("partner_groups")
+}
+
+// نموذج ربط الشركاء بمجموعات الشركاء
+model PartnerGroupPartner {
+  id             String @id @default(cuid())
+  partnerGroupId String
+  partnerId      String
+  percent        Decimal @db.Decimal(5,2)
+
+  // العلاقات
+  partnerGroup PartnerGroup @relation(fields: [partnerGroupId], references: [id], onDelete: Cascade)
+  partner      Partner      @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerGroupId, partnerId])
+  @@map("partner_group_partners")
+}
+
+// نموذج ربط الشركاء بالوحدات
+model UnitPartner {
+  id        String  @id @default(cuid())
+  unitId    String
+  partnerId String
+  percent   Decimal @db.Decimal(5,2)
+
+  // العلاقات
+  unit   Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, partnerId])
+  @@map("unit_partners")
+}
+
+// نموذج العقود
+model Contract {
+  id                   String   @id @default(cuid())
+  code                 String   @unique
+  unitId               String
+  customerId           String
+  totalPrice           Decimal  @db.Decimal(15,2)
+  downPayment          Decimal  @db.Decimal(15,2) @default(0)
+  discountAmount       Decimal  @db.Decimal(15,2) @default(0)
+  maintenanceDeposit   Decimal  @db.Decimal(15,2) @default(0)
+  brokerName           String?
+  brokerPercent        Decimal  @db.Decimal(5,2) @default(0)
+  brokerAmount         Decimal  @db.Decimal(15,2) @default(0)
+  commissionSafeId     String?
+  type                 String   @default("installment")
+  count                Int      @default(0)
+  extraAnnual          Int      @default(0)
+  annualPaymentValue   Decimal  @db.Decimal(15,2) @default(0)
+  start                DateTime
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // العلاقات
+  unit         Unit            @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  customer     Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  installments Installment[]
+  brokerDues   BrokerDue[]
+  vouchers     Voucher[]       @relation("ContractVouchers")
+
+  @@map("contracts")
+}
+
+// نموذج الأقساط
+model Installment {
+  id             String   @id @default(cuid())
+  unitId         String
+  contractId     String?
+  type           String
+  amount         Decimal  @db.Decimal(15,2)
+  originalAmount Decimal  @db.Decimal(15,2)
+  dueDate        DateTime?
+  paymentDate    DateTime?
+  status         String   @default("غير مدفوع")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // العلاقات
+  unit     Unit       @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  contract Contract?  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("installments")
+}
+
+// نموذج الخزن
+model Safe {
+  id        String   @id @default(cuid())
+  name      String
+  balance   Decimal  @db.Decimal(15,2) @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // العلاقات
+  vouchers      Voucher[]
+  fromTransfers Transfer[] @relation("TransferFrom")
+  toTransfers   Transfer[] @relation("TransferTo")
+
+  @@map("safes")
+}
+
+// نموذج السندات
+model Voucher {
+  id           String   @id @default(cuid())
+  type         String   // 'receipt' or 'payment'
+  date         DateTime
+  amount       Decimal  @db.Decimal(15,2)
+  safeId       String
+  description  String
+  payer        String?
+  beneficiary  String?
+  linkedRef    String?  // مرجع مرتبط (عقد أو قسط أو مصروف)
+  contractId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // العلاقات
+  safe     Safe      @relation(fields: [safeId], references: [id], onDelete: Cascade)
+  contract Contract? @relation("ContractVouchers", fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("vouchers")
+}
+
+// نموذج السماسرة
+model Broker {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // العلاقات
+  brokerDues BrokerDue[]
+
+  @@map("brokers")
+}
+
+// نموذج عمولات السماسرة
+model BrokerDue {
+  id             String   @id @default(cuid())
+  contractId     String
+  brokerId       String?  // ربط بالسمسار إذا كان موجود في النظام
+  brokerName     String   // اسم السمسار (للعرض)
+  amount         Decimal  @db.Decimal(15,2)
+  dueDate        DateTime
+  status         String   @default("due")
+  paymentDate    DateTime?
+  paidFromSafeId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // العلاقات
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  broker   Broker?  @relation(fields: [brokerId], references: [id])
+
+  @@map("broker_dues")
+}
+
+// نموذج ديون الشركاء
+model PartnerDebt {
+  id               String   @id @default(cuid())
+  unitId           String
+  payingPartnerId  String
+  owedPartnerId    String
+  amount           Decimal  @db.Decimal(15,2)
+  dueDate          DateTime
+  status           String   @default("غير مدفوع")
+  paymentDate      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // العلاقات
+  unit           Unit              @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  payingPartner  Partner           @relation("PayingPartner", fields: [payingPartnerId], references: [id], onDelete: Cascade)
+  owedPartner    Partner           @relation("OwedPartner", fields: [owedPartnerId], references: [id], onDelete: Cascade)
+
+  @@map("partner_debts")
+}
+
+// نموذج التحويلات بين الخزن
+model Transfer {
+  id          String   @id @default(cuid())
+  fromSafeId  String
+  toSafeId    String
+  amount      Decimal  @db.Decimal(15,2)
+  date        DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // العلاقات
+  fromSafe Safe @relation("TransferFrom", fields: [fromSafeId], references: [id], onDelete: Cascade)
+  toSafe   Safe @relation("TransferTo", fields: [toSafeId], references: [id], onDelete: Cascade)
+
+  @@map("transfers")
+}
+
+// نموذج سجل التغييرات
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  timestamp   DateTime @default(now())
+  action      String
+  description String
+  details     Json?
+  createdAt   DateTime @default(now())
+
+  // العلاقات
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// نموذج الإعدادات
+model Setting {
+  id    String @id @default("app_settings")
+  theme String @default("dark")
+  font  Int    @default(16)
+  pass  String?
+  data  Json?  // للإعدادات الإضافية
+
+  @@map("settings")
+}

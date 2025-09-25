@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
-      code,
       unitId,
       customerId,
       totalPrice,
@@ -62,9 +61,9 @@ export async function POST(request: NextRequest) {
       brokerAmount,
       commissionSafeId,
       type,
-      count,
-      extraAnnual,
-      annualPaymentValue,
+      count = 0,
+      extraAnnual = 0,
+      annualPaymentValue = 0,
       start
     } = body;
 
@@ -75,6 +74,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // إنشاء كود العقد
+    const contractsCount = await prisma.contract.count();
+    const code = `CTR-${String(contractsCount + 1).padStart(5, '0')}`;
 
     // التحقق من وجود الوحدة والعميل
     const [unit, customer] = await Promise.all([
@@ -116,12 +119,16 @@ export async function POST(request: NextRequest) {
     });
 
     // تسجيل العملية
-    await logAction('إنشاء عقد جديد', {
-      contractId: contract.id,
-      code: contract.code,
-      unitId: contract.unitId,
-      customerId: contract.customerId
-    });
+    try {
+      await logAction('إنشاء عقد جديد', {
+        contractId: contract.id,
+        code: contract.code,
+        unitId: contract.unitId,
+        customerId: contract.customerId
+      });
+    } catch (logError) {
+      console.error('Error logging contract creation:', logError);
+    }
 
     return NextResponse.json(contract, { status: 201 });
   } catch (error) {

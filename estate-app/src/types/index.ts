@@ -166,6 +166,6 @@ export interface AppState {
 export interface NavigationRoute {
   id: string;
   title: string;
-  render: (param?: any) => void;
+  render: (param?: any) => JSX.Element;
   tab: boolean;
 }

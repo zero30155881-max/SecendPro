@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // التحقق من عدم تكرار الكود
     const existingUnit = await prisma.unit.findFirst({
-      where: { code: { equals: code, mode: 'insensitive' } }
+      where: { code: code }
     });
 
     if (existingUnit) {

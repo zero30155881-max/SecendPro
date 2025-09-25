@@ -6,40 +6,44 @@ async function main() {
   try {
     console.log('🚀 إعداد قاعدة البيانات...');
 
-    // إنشاء الجداول
-    await prisma.$executeRaw`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-
+    // SQLite لا يحتاج إلى extensions
     console.log('✅ تم إنشاء قاعدة البيانات بنجاح');
 
     // إضافة خزنة افتراضية
-    const defaultSafe = await prisma.safe.upsert({
-      where: { name: 'الخزنة الرئيسية' },
-      update: {},
-      create: {
-        name: 'الخزنة الرئيسية',
-        balance: 0
-      }
+    const existingSafe = await prisma.safe.findFirst({
+      where: { name: 'الخزنة الرئيسية' }
     });
+
+    if (!existingSafe) {
+      await prisma.safe.create({
+        data: {
+          name: 'الخزنة الرئيسية',
+          balance: 0
+        }
+      });
+    }
 
     console.log('✅ تم إضافة الخزنة الافتراضية');
 
     // إضافة إعدادات افتراضية
-    const defaultSettings = await prisma.setting.upsert({
-      where: { id: 'app_settings' },
-      update: {},
-      create: {
-        id: 'app_settings',
-        theme: 'dark',
-        font: 16,
-        pass: null
-      }
+    const existingSettings = await prisma.setting.findFirst({
+      where: { id: 'app_settings' }
     });
+
+    if (!existingSettings) {
+      await prisma.setting.create({
+        data: {
+          id: 'app_settings',
+          theme: 'dark',
+          font: 16,
+          pass: null
+        }
+      });
+    }
 
     console.log('✅ تم إضافة الإعدادات الافتراضية');
 
     console.log('🎉 تم إعداد قاعدة البيانات بنجاح!');
-    console.log(`الخزنة الافتراضية: ${defaultSafe.name}`);
-    console.log(`الإعدادات: ${JSON.stringify(defaultSettings)}`);
 
   } catch (error) {
     console.error('❌ حدث خطأ في إعداد قاعدة البيانات:', error);

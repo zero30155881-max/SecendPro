@@ -7,8 +7,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 
@@ -40,7 +40,7 @@ model Unit {
   floor      String?
   building   String?
   notes      String?
-  totalPrice Decimal  @db.Decimal(15,2)
+  totalPrice Float
   unitType   String   @default("سكني")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -89,7 +89,7 @@ model PartnerGroupPartner {
   id             String @id @default(cuid())
   partnerGroupId String
   partnerId      String
-  percent        Decimal @db.Decimal(5,2)
+  percent        Float
 
   // العلاقات
   partnerGroup PartnerGroup @relation(fields: [partnerGroupId], references: [id], onDelete: Cascade)
@@ -104,7 +104,7 @@ model UnitPartner {
   id        String  @id @default(cuid())
   unitId    String
   partnerId String
-  percent   Decimal @db.Decimal(5,2)
+  percent   Float
 
   // العلاقات
   unit   Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
@@ -120,18 +120,18 @@ model Contract {
   code                 String   @unique
   unitId               String
   customerId           String
-  totalPrice           Decimal  @db.Decimal(15,2)
-  downPayment          Decimal  @db.Decimal(15,2) @default(0)
-  discountAmount       Decimal  @db.Decimal(15,2) @default(0)
-  maintenanceDeposit   Decimal  @db.Decimal(15,2) @default(0)
+  totalPrice           Float
+  downPayment          Float @default(0)
+  discountAmount       Float @default(0)
+  maintenanceDeposit   Float @default(0)
   brokerName           String?
-  brokerPercent        Decimal  @db.Decimal(5,2) @default(0)
-  brokerAmount         Decimal  @db.Decimal(15,2) @default(0)
+  brokerPercent        Float @default(0)
+  brokerAmount         Float @default(0)
   commissionSafeId     String?
   type                 String   @default("installment")
   count                Int      @default(0)
   extraAnnual          Int      @default(0)
-  annualPaymentValue   Decimal  @db.Decimal(15,2) @default(0)
+  annualPaymentValue   Float @default(0)
   start                DateTime
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -152,8 +152,8 @@ model Installment {
   unitId         String
   contractId     String?
   type           String
-  amount         Decimal  @db.Decimal(15,2)
-  originalAmount Decimal  @db.Decimal(15,2)
+  amount         Float
+  originalAmount Float
   dueDate        DateTime?
   paymentDate    DateTime?
   status         String   @default("غير مدفوع")
@@ -171,7 +171,7 @@ model Installment {
 model Safe {
   id        String   @id @default(cuid())
   name      String
-  balance   Decimal  @db.Decimal(15,2) @default(0)
+  balance   Float @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -188,7 +188,7 @@ model Voucher {
   id           String   @id @default(cuid())
   type         String   // 'receipt' or 'payment'
   date         DateTime
-  amount       Decimal  @db.Decimal(15,2)
+  amount       Float
   safeId       String
   description  String
   payer        String?
@@ -226,7 +226,7 @@ model BrokerDue {
   contractId     String
   brokerId       String?  // ربط بالسمسار إذا كان موجود في النظام
   brokerName     String   // اسم السمسار (للعرض)
-  amount         Decimal  @db.Decimal(15,2)
+  amount         Float
   dueDate        DateTime
   status         String   @default("due")
   paymentDate    DateTime?
@@ -247,7 +247,7 @@ model PartnerDebt {
   unitId           String
   payingPartnerId  String
   owedPartnerId    String
-  amount           Decimal  @db.Decimal(15,2)
+  amount           Float
   dueDate          DateTime
   status           String   @default("غير مدفوع")
   paymentDate      DateTime?
@@ -267,7 +267,7 @@ model Transfer {
   id          String   @id @default(cuid())
   fromSafeId  String
   toSafeId    String
-  amount      Decimal  @db.Decimal(15,2)
+  amount      Float
   date        DateTime
   notes       String?
   createdAt   DateTime @default(now())
@@ -284,9 +284,9 @@ model Transfer {
 model AuditLog {
   id          String   @id @default(cuid())
   timestamp   DateTime @default(now())
-  action      String
+  action      String?
   description String
-  details     Json?
+  details     String?
   createdAt   DateTime @default(now())
 
   @@map("audit_logs")

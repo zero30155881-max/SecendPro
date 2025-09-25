@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AppState, AppSettings, Customer, Unit, Partner, Contract, Installment, Safe, Voucher, Broker, PartnerDebt } from '@/types';
 import { uid } from '@/utils';
-import { prisma } from '@/lib/prisma';
 
 interface AppContextType {
   state: AppState;
@@ -134,79 +133,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
 
-      // تحميل البيانات من قاعدة البيانات
+      // تحميل البيانات من API routes
       const [
-        customers,
-        units,
-        partners,
-        contracts,
-        installments,
-        safes,
-        vouchers,
-        brokers,
-        partnerDebts,
-        settings
+        customersRes,
+        unitsRes,
+        partnersRes,
+        contractsRes,
+        installmentsRes,
+        safesRes,
+        vouchersRes,
+        brokersRes,
+        partnerDebtsRes,
+        settingsRes
       ] = await Promise.all([
-        prisma.customer.findMany({ orderBy: { createdAt: 'desc' } }),
-        prisma.unit.findMany({
-          include: {
-            unitPartners: {
-              include: {
-                partner: true
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        }),
-        prisma.partner.findMany({ orderBy: { createdAt: 'desc' } }),
-        prisma.contract.findMany({
-          include: {
-            unit: true,
-            customer: true,
-            installments: true,
-            brokerDues: true,
-            vouchers: true
-          },
-          orderBy: { createdAt: 'desc' }
-        }),
-        prisma.installment.findMany({
-          include: {
-            unit: true,
-            contract: true
-          },
-          orderBy: { dueDate: 'asc' }
-        }),
-        prisma.safe.findMany({ orderBy: { createdAt: 'desc' } }),
-        prisma.voucher.findMany({
-          include: {
-            safe: true,
-            contract: true
-          },
-          orderBy: { date: 'desc' }
-        }),
-        prisma.broker.findMany({ orderBy: { createdAt: 'desc' } }),
-        prisma.partnerDebt.findMany({
-          include: {
-            unit: true,
-            payingPartner: true,
-            owedPartner: true
-          },
-          orderBy: { dueDate: 'asc' }
-        }),
-        prisma.setting.findFirst({ where: { id: 'app_settings' } })
+        fetch('/api/customers').then(res => res.json()),
+        fetch('/api/units').then(res => res.json()),
+        fetch('/api/partners').then(res => res.json()),
+        fetch('/api/contracts').then(res => res.json()),
+        fetch('/api/installments').then(res => res.json()),
+        fetch('/api/safes').then(res => res.json()),
+        fetch('/api/vouchers').then(res => res.json()),
+        fetch('/api/brokers').then(res => res.json()),
+        fetch('/api/partner-debts').then(res => res.json()),
+        fetch('/api/settings').then(res => res.json())
       ]);
 
       // تحديث الحالة
-      dispatch({ type: 'SET_CUSTOMERS', payload: customers });
-      dispatch({ type: 'SET_UNITS', payload: units });
-      dispatch({ type: 'SET_PARTNERS', payload: partners });
-      dispatch({ type: 'SET_CONTRACTS', payload: contracts });
-      dispatch({ type: 'SET_INSTALLMENTS', payload: installments });
-      dispatch({ type: 'SET_SAFES', payload: safes });
-      dispatch({ type: 'SET_VOUCHERS', payload: vouchers });
-      dispatch({ type: 'SET_BROKERS', payload: brokers });
-      dispatch({ type: 'SET_PARTNER_DEBTS', payload: partnerDebts });
-      dispatch({ type: 'SET_SETTINGS', payload: settings || { theme: 'dark', font: 16, pass: null } });
+      dispatch({ type: 'SET_CUSTOMERS', payload: customersRes });
+      dispatch({ type: 'SET_UNITS', payload: unitsRes });
+      dispatch({ type: 'SET_PARTNERS', payload: partnersRes });
+      dispatch({ type: 'SET_CONTRACTS', payload: contractsRes.contracts || [] });
+      dispatch({ type: 'SET_INSTALLMENTS', payload: installmentsRes.installments || [] });
+      dispatch({ type: 'SET_SAFES', payload: safesRes });
+      dispatch({ type: 'SET_VOUCHERS', payload: vouchersRes });
+      dispatch({ type: 'SET_BROKERS', payload: brokersRes });
+      dispatch({ type: 'SET_PARTNER_DEBTS', payload: partnerDebtsRes });
+      dispatch({ type: 'SET_SETTINGS', payload: settingsRes });
 
     } catch (error) {
       console.error('Error loading data:', error);

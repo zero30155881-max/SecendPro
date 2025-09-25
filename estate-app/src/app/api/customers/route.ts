@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // التحقق من عدم تكرار الاسم
     const existingCustomer = await prisma.customer.findFirst({
-      where: { name: { equals: name, mode: 'insensitive' } }
+      where: { name: name }
     });
 
     if (existingCustomer) {
